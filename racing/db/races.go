@@ -69,7 +69,6 @@ func (r *racesRepo) determineRaceStatus(advertisedStartTime timestamppb.Timestam
 	if parsedAdStartTime.Before(time.Now()) {
 		return racing.RaceStatus_CLOSED
 	}
-
 	return racing.RaceStatus_OPEN
 }
 

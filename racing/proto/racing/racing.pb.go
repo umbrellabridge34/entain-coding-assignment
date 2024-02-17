@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// The status of a race which is either OPEN or CLOSED.
 type RaceStatus int32
 
 const (
@@ -244,7 +245,7 @@ type Race struct {
 	Visible bool `protobuf:"varint,5,opt,name=visible,proto3" json:"visible,omitempty"`
 	// AdvertisedStartTime is the time the race is advertised to run.
 	AdvertisedStartTime *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=advertised_start_time,json=advertisedStartTime,proto3" json:"advertised_start_time,omitempty"`
-	// Status represents whether the race has expired or not.
+	// Status represents whether or not the race has expired.
 	Status RaceStatus `protobuf:"varint,7,opt,name=status,proto3,enum=racing.RaceStatus" json:"status,omitempty"`
 }
 

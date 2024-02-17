@@ -30,6 +30,7 @@ message ListRacesRequestFilter {
 
 /* Resources */
 
+// The status of a race which is either OPEN or CLOSED.
 enum RaceStatus {
   CLOSED = 0;
   OPEN = 1;
