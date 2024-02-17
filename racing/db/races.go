@@ -10,6 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"git.neds.sh/matty/entain/racing/proto/racing"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // RacesRepo provides repository access to races.
@@ -55,11 +56,21 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 	query, args = r.applyFilter(query, filter)
 
 	rows, err := r.db.Query(query, args...)
+
 	if err != nil {
 		return nil, err
 	}
 
 	return r.scanRaces(rows)
+}
+
+func (r *racesRepo) determineRaceStatus(advertisedStartTime timestamppb.Timestamp) racing.RaceStatus {
+	parsedAdStartTime := advertisedStartTime.AsTime()
+	if parsedAdStartTime.Before(time.Now()) {
+		return racing.RaceStatus_CLOSED
+	}
+
+	return racing.RaceStatus_OPEN
 }
 
 func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFilter) (string, []interface{}) {
@@ -124,6 +135,8 @@ func (m *racesRepo) scanRaces(
 		}
 
 		race.AdvertisedStartTime = ts
+
+		race.Status = racing.RaceStatus_OPEN
 
 		races = append(races, &race)
 	}

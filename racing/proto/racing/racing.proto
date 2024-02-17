@@ -30,6 +30,11 @@ message ListRacesRequestFilter {
 
 /* Resources */
 
+enum RaceStatus {
+  CLOSED = 0;
+  OPEN = 1;
+}
+
 // A race resource.
 message Race {
   // ID represents a unique identifier for the race.
@@ -44,5 +49,7 @@ message Race {
   bool visible = 5;
   // AdvertisedStartTime is the time the race is advertised to run.
   google.protobuf.Timestamp advertised_start_time = 6;
+  // Status represents whether or not the race has expired.
+  RaceStatus status = 7; 
 }
 
