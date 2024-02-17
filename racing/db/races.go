@@ -69,6 +69,7 @@ func (r *racesRepo) determineRaceStatus(advertisedStartTime timestamppb.Timestam
 	if parsedAdStartTime.Before(time.Now()) {
 		return racing.RaceStatus_CLOSED
 	}
+
 	return racing.RaceStatus_OPEN
 }
 
@@ -135,7 +136,7 @@ func (m *racesRepo) scanRaces(
 
 		race.AdvertisedStartTime = ts
 
-		race.Status = racing.RaceStatus_OPEN
+		race.Status = m.determineRaceStatus(*race.AdvertisedStartTime)
 
 		races = append(races, &race)
 	}
