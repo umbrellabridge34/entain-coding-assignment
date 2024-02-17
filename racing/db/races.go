@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -80,8 +79,6 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 			args = append(args, meetingID)
 		}
 	}
-
-	fmt.Print("filter.VisibleOnly: ", filter.VisibleOnly)
 
 	if filter.VisibleOnly {
 		clauses = append(clauses, "visible = ?")
