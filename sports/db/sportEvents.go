@@ -67,7 +67,7 @@ func (m *sportEventsRepo) scanSportEvents(
 		var sport sports.sportEvent
 		var advertisedStart time.Time
 
-		if err := rows.Scan(&sport.Id, &sport.MeetingId, &sport.Name, &sport.Number, &sport.Visible, &advertisedStart); err != nil {
+		if err := rows.Scan(&sport.Id, &sport.Name, &advertisedStart); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, nil
 			}
