@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +21,9 @@ type RacesRepo interface {
 
 	// List will return a list of races.
 	List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
+
+	// GetRaceById will return a race by its ID.
+	GetRaceById(raceId int64) (*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -62,6 +66,35 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 	}
 
 	return r.scanRaces(rows)
+}
+
+func (r *racesRepo) GetRaceById(raceId int64) (*racing.Race, error) {
+	var (
+		err   error
+		query string
+		args  []interface{}
+	)
+
+	query = getRaceQueries()[getRaceById]
+	args = append(args, raceId)
+
+	rows, err := r.db.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	results, err := r.scanRaces(rows)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(results) < 1 {
+		return nil, fmt.Errorf("No race found with id: %d", raceId)
+	}
+
+	return results[0], nil
 }
 
 func (r *racesRepo) determineRaceStatus(advertisedStartTime timestamppb.Timestamp) racing.RaceStatus {
