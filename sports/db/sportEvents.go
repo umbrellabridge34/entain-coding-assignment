@@ -5,17 +5,15 @@ import (
 	"sync"
 	"time"
 
+	"git.neds.sh/matty/entain/sports/proto/sports"
 	"github.com/golang/protobuf/ptypes"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// SportEventsRepo provides repository access to sportEvents.
 type SportEventsRepo interface {
-	// Init will initialise our sportEvents repository.
 	Init() error
 
-	// List will return a list of sportEvents.
-	List() ([]*sports.sportEvent, error)
+	List() ([]*sports.SportEvent, error)
 }
 
 type sportEventsRepo struct {
@@ -23,24 +21,21 @@ type sportEventsRepo struct {
 	init sync.Once
 }
 
-// NewSportsRepo creates a new sportEvents repository.
-func NewSportsRepo(db *sql.DB) sportEventsRepo {
+func NewSportsRepo(db *sql.DB) SportEventsRepo {
 	return &sportEventsRepo{db: db}
 }
 
-// Init prepares the sport repository dummy data.
 func (r *sportEventsRepo) Init() error {
 	var err error
 
 	r.init.Do(func() {
-		// For test/example purposes, we seed the DB with some dummy sportEvents.
 		err = r.seed()
 	})
 
 	return err
 }
 
-func (r *sportEventsRepo) List() ([]*sports.sportEvent, error) {
+func (r *sportEventsRepo) List() ([]*sports.SportEvent, error) {
 	var (
 		err   error
 		query string
@@ -60,11 +55,11 @@ func (r *sportEventsRepo) List() ([]*sports.sportEvent, error) {
 
 func (m *sportEventsRepo) scanSportEvents(
 	rows *sql.Rows,
-) ([]*sports.sportEvent, error) {
-	var sportEvents []*sports.sportEvent
+) ([]*sports.SportEvent, error) {
+	var sportEvents []*sports.SportEvent
 
 	for rows.Next() {
-		var sport sports.sportEvent
+		var sport sports.SportEvent
 		var advertisedStart time.Time
 
 		if err := rows.Scan(&sport.Id, &sport.Name, &advertisedStart); err != nil {

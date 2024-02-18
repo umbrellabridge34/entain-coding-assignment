@@ -7,8 +7,8 @@ import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
 service Sports {
-  // ListSportsEvents returns a list of all sports events.
-  rpc ListSportsEvents(ListSportsEventsRequest) returns (ListSportsEventsResponse) {
+  // ListSportEvents returns a list of all sport events.
+  rpc ListSportEvents(ListSportEventsRequest) returns (ListSportEventsResponse) {
     option (google.api.http) = { post: "/v1/list-sports", body: "*" };
   }
 }

@@ -5,8 +5,8 @@ option go_package = "/sports";
 
 import "google/protobuf/timestamp.proto";
 
-service sports {
-  // ListSportEvents will return a collection of all sportEvents.
+service Sports {
+  // ListSportEvents will return a collection of all sport events.
   rpc ListSportEvents(ListSportEventsRequest) returns (ListSportEventsResponse) {}
 }
 
@@ -31,4 +31,3 @@ message SportEvent {
   // AdvertisedStartTime is the time the sport is advertised to run.
   google.protobuf.Timestamp advertised_start_time = 3;
 }
-
