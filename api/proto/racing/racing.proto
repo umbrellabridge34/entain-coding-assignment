@@ -28,9 +28,17 @@ message ListRacesResponse {
 // Filter for listing races.
 message ListRacesRequestFilter {
   repeated int64 meeting_ids = 1;
+  bool visible_only = 2;
+  string order_direction = 3;
 }
 
 /* Resources */
+
+// The status of a race which is either OPEN or CLOSED.
+enum RaceStatus {
+  CLOSED = 0;
+  OPEN = 1;
+}
 
 // A race resource.
 message Race {
@@ -46,4 +54,6 @@ message Race {
   bool visible = 5;
   // AdvertisedStartTime is the time the race is advertised to run.
   google.protobuf.Timestamp advertised_start_time = 6;
+  // Status represents whether or not the race has expired.
+  RaceStatus status = 7; 
 }
