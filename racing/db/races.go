@@ -64,8 +64,9 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 
 func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFilter) (string, []interface{}) {
 	var (
-		clauses []string
-		args    []interface{}
+		clauses        []string
+		args           []interface{}
+		orderDirection string = "ASC"
 	)
 
 	if filter == nil {
@@ -80,9 +81,27 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		}
 	}
 
+	if filter.VisibleOnly {
+		clauses = append(clauses, "visible = ?")
+		args = append(args, 1)
+	}
+
 	if len(clauses) != 0 {
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}
+
+	if filter.OrderDirection != "" {
+		orderDirection = filter.OrderDirection
+	}
+
+	query += " ORDER BY advertised_start_time "
+	if filter.OrderDirection == "ASC" {
+		query += "ASC"
+	} else {
+		query += "DESC"
+	}
+
+	args = append(args, orderDirection)
 
 	return query, args
 }
