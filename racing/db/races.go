@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -10,6 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"git.neds.sh/matty/entain/racing/proto/racing"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // RacesRepo provides repository access to races.
@@ -19,6 +21,9 @@ type RacesRepo interface {
 
 	// List will return a list of races.
 	List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
+
+	// GetRaceById will return a race by its ID.
+	GetRaceById(raceId int64) (*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -55,6 +60,7 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 	query, args = r.applyFilter(query, filter)
 
 	rows, err := r.db.Query(query, args...)
+
 	if err != nil {
 		return nil, err
 	}
@@ -62,10 +68,49 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 	return r.scanRaces(rows)
 }
 
+func (r *racesRepo) GetRaceById(raceId int64) (*racing.Race, error) {
+	var (
+		err   error
+		query string
+		args  []interface{}
+	)
+
+	query = getRaceQueries()[getRaceById]
+	args = append(args, raceId)
+
+	rows, err := r.db.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	results, err := r.scanRaces(rows)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(results) < 1 {
+		return nil, fmt.Errorf("No race found with id: %d", raceId)
+	}
+
+	return results[0], nil
+}
+
+func (r *racesRepo) determineRaceStatus(advertisedStartTime timestamppb.Timestamp) racing.RaceStatus {
+	parsedAdStartTime := advertisedStartTime.AsTime()
+	if parsedAdStartTime.Before(time.Now()) {
+		return racing.RaceStatus_CLOSED
+	}
+
+	return racing.RaceStatus_OPEN
+}
+
 func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFilter) (string, []interface{}) {
 	var (
-		clauses []string
-		args    []interface{}
+		clauses        []string
+		args           []interface{}
+		orderDirection string = "ASC"
 	)
 
 	if filter == nil {
@@ -80,9 +125,27 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		}
 	}
 
+	if filter.VisibleOnly {
+		clauses = append(clauses, "visible = ?")
+		args = append(args, 1)
+	}
+
 	if len(clauses) != 0 {
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}
+
+	if filter.OrderDirection != "" {
+		orderDirection = filter.OrderDirection
+	}
+
+	query += " ORDER BY advertised_start_time "
+	if filter.OrderDirection == "ASC" {
+		query += "ASC"
+	} else {
+		query += "DESC"
+	}
+
+	args = append(args, orderDirection)
 
 	return query, args
 }
@@ -110,6 +173,8 @@ func (m *racesRepo) scanRaces(
 		}
 
 		race.AdvertisedStartTime = ts
+
+		race.Status = m.determineRaceStatus(*race.AdvertisedStartTime)
 
 		races = append(races, &race)
 	}
