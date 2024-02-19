@@ -105,9 +105,14 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		orderDirection = filter.OrderDirection
 	}
 
-	args = append(args, orderDirection)
+	query += " ORDER BY advertised_start_time "
+	if filter.OrderDirection == "ASC" {
+		query += "ASC"
+	} else {
+		query += "DESC"
+	}
 
-	query += " ORDER BY advertised_start_time " + orderDirection
+	args = append(args, orderDirection)
 
 	return query, args
 }
